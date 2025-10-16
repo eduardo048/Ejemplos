@@ -10,4 +10,7 @@ int main(void) {
     cadena[strcspn(cadena, "\n")] = '\0';
     printf("Cadena introducida: %s\n", cadena);
     return 0;
+
+
+    
 }
