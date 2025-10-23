@@ -10,7 +10,7 @@ void main(){
     pid = fork();
     
     if(pid == -1){
-        printf("No se ha podido crear el proceso hijo...");
+        printf("No se ha podido crear el proceso hijo...gcgcvghhggv");
         retorno = -1;
     }else{
         if(pid == 0){
