@@ -1,21 +1,19 @@
-#include <stdlib.h>     // Para exit(), _exit()
-#include <unistd.h>     // Para fork(), getpid(), getppid()
-#include <stdio.h>      // Para printf()
-#include <sys/wait.h>   // Para wait()
-
-// ACTIVIDAD 1.1
-// Crea un proceso hijo que modifica una variable y muestra los valores
-// tanto en el proceso padre como en el hijo.
+#include <stdlib.h>     
+#include <unistd.h>     
+#include <stdio.h>      
+#include <sys/wait.h>   
 
 void main() {
-    int variable = 6;   // Valor inicial
+    // Variable compartida entre padre e hijo
+    int variable = 6;   
     pid_t pid, Hijo_pid;
 
     printf("Valor inicial de la variable: %d\n", variable);
 
-    // Creación del proceso hijo
+    /// Crear proceso hijo
     pid = fork();
 
+    // Evaluar el valor retornado por fork()
     switch (pid) {
         case -1:
             // Error al crear el proceso hijo
@@ -28,12 +26,13 @@ void main() {
             printf("\tSoy el proceso HIJO (PID: %d)\n", getpid());
             printf("\tLa variable vale %d, la decremento en 5...\n", variable);
 
+            // Decrementar la variable en 5
             variable -= 5;
 
             printf("\tAhora la variable en el HIJO vale: %d\n", variable);
 
             // Terminar el proceso hijo correctamente
-            _exit(0);
+            exit(0);
             break;
 
         default:
@@ -46,10 +45,10 @@ void main() {
             printf("Mi hijo (PID: %d) ha terminado.\n", Hijo_pid);
             printf("La variable vale %d, la incremento en 5...\n", variable);
 
+            // Incrementar la variable en 5
             variable += 5;
 
             printf("Ahora la variable en el PADRE vale: %d\n", variable);
     }
-
     exit(0);
 }
