@@ -1,49 +1,55 @@
-#include <stdio.h>    
-#include <stdlib.h>     
-#include <unistd.h>     
-#include <sys/wait.h>   
+#include <stdlib.h>     // Para exit(), _exit()
+#include <unistd.h>     // Para fork(), getpid(), getppid()
+#include <stdio.h>      // Para printf()
+#include <sys/wait.h>   // Para wait()
 
-int main(void) {
-    // Declaración e inicialización de la variable
-    int variable = 6;
-    pid_t pid;  
+// ACTIVIDAD 1.1
+// Crea un proceso hijo que modifica una variable y muestra los valores
+// tanto en el proceso padre como en el hijo.
 
-    // Mostramos el valor inicial de la variable
+void main() {
+    int variable = 6;   // Valor inicial
+    pid_t pid, Hijo_pid;
+
     printf("Valor inicial de la variable: %d\n", variable);
 
-    // Creamos un nuevo proceso
+    // Creación del proceso hijo
     pid = fork();
 
-    if (pid < 0) {
-        // Manejo de error en la creación del proceso hijo
-        perror("Error al crear el proceso hijo");
-        return 1; 
-    } 
-    else if (pid == 0) {
-        // Este bloque lo ejecuta solo el proceso hijo
+    switch (pid) {
+        case -1:
+            // Error al crear el proceso hijo
+            printf("No se ha podido crear el proceso hijo...\n");
+            exit(-1);
+            break;
 
-        // El proceso hijo resta 5 a la variable
-        variable -= 5;
+        case 0:
+            // === PROCESO HIJO ===
+            printf("\tSoy el proceso HIJO (PID: %d)\n", getpid());
+            printf("\tLa variable vale %d, la decremento en 5...\n", variable);
 
-        // Muestra el nuevo valor de la variable en el proceso hijo
-        printf("Variable en Proceso Hijo: %d\n", variable);
+            variable -= 5;
 
-        // El proceso hijo termina su ejecución
-        exit(0);
-    } 
-    else {
-        // Este bloque lo ejecuta solo el proceso padre
+            printf("\tAhora la variable en el HIJO vale: %d\n", variable);
 
-        // El proceso padre espera a que el hijo termine
-        wait(NULL);
+            // Terminar el proceso hijo correctamente
+            _exit(0);
+            break;
 
-        // El proceso padre suma 5 a la variable
-        variable += 5;
+        default:
+            // === PROCESO PADRE ===
+            printf("Soy el proceso PADRE (PID: %d), espero a que termine mi hijo...\n", getpid());
 
-        // Muestra el nuevo valor de la variable en el proceso padre
-        printf("Variable en Proceso Padre: %d\n", variable);
+            // Espera la finalización del hijo
+            Hijo_pid = wait(NULL);
+
+            printf("Mi hijo (PID: %d) ha terminado.\n", Hijo_pid);
+            printf("La variable vale %d, la incremento en 5...\n", variable);
+
+            variable += 5;
+
+            printf("Ahora la variable en el PADRE vale: %d\n", variable);
     }
 
-    // Fin del programa
-    return 0;
+    exit(0);
 }
