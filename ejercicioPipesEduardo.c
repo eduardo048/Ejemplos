@@ -1,75 +1,61 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h> 
-#include <sys/types.h>
-#include <sys/wait.h>  
+#include <unistd.h>     
+#include <sys/types.h>  
+#include <sys/wait.h>   
 
-// Programa que crea un pipe entre un proceso padre y un proceso hijo.
-// El proceso hijo envía un mensaje al proceso padre a través del pipe.
-
+// Comunicación entre procesos usando pipes
+// El proceso hijo envía un mensaje al proceso padre a través del pipe
+// El padre lee el mensaje y lo muestra por pantalla
+// Autor: Eduardo 
 int main(void){
-    // Descriptores del pipe: fd[0] para lectura, fd[1] para escritura 
-    int fd[2];  
-    // Buffer para almacenar el mensaje leído             
+    // Descriptores del pipe
+    int fd[2];               
     char buffer[30];
-    // Identificador del proceso
     pid_t pid;
-
     // Crear el pipe
     if(pipe(fd) == -1){
-        perror("pipe");
-        return 1;
+        perror("No se pudo crear el pipe");
+        exit(-1);
     }
-
     // Crear proceso hijo
     pid = fork();
-    if(pid == -1){
-        perror("fork");
-        return 1;
-    }
+    // Evaluar el valor retornado por fork()
+    switch(pid) {
 
-    if(pid == 0){
-        // === HIJO ===
-        const char *msg = "Hola papa!\n";
+        case -1:
+            // ERROR
+            perror("NO SE HA PODIDO CREAR EL HIJO");
+            exit(-1);
+            break;
 
-        close(fd[0]);
+        case 0:
+            // === HIJO ===
+            printf("HIJO: Escribo en el pipe...\n");
+            // El hijo NO lee del pipe
+            close(fd[0]); 
+            // Escribir mensaje en el pipe
+            write(fd[1], "Hola papi", strlen("Hola papi") + 1);
+            // Cerrar el extremo de escritura del pipe
+            close(fd[1]); 
+            exit(0);
+            break;
 
-        // escribir en el pipe
-        ssize_t n = write(fd[1], msg, strlen(msg) + 1);
-        // manejar error de escritura
-        if(n == -1){
-            perror("write");
-            // cerramos antes de salir
-            close(fd[1]);
-            exit(1);
-        }
-
-        close(fd[1]);
-        exit(0);
-    } else {
-        // === PADRE ===
-        close(fd[1]);
-
-        // esperar a que el hijo termine
-        wait(NULL);
-
-        // leer del pipe
-        ssize_t n = read(fd[0], buffer, sizeof(buffer) - 1);
-        // manejar error de lectura
-        if(n == -1){
-            perror("read");
-            close(fd[0]);
-            return 1;
-        }
-        // asegurar que el buffer esté null-terminated
-        if(n >= 0){
-            buffer[n] = '\0';
-        }
-        // mostrar el mensaje leído
-        printf("El PADRE leyó del pipe:\n\tMensaje leído: %s\n", buffer);
-
-        close(fd[0]); 
+        default:
+            // === PADRE ===
+            // Esperar a que el hijo termine
+            wait(NULL); 
+            // El padre NO escribe en el pipe 
+            printf("PADRE: Leo del pipe...\n");
+            close(fd[1]); 
+            // Leer mensaje del pipe
+            read(fd[0], buffer, sizeof(buffer));
+            // Mostrar el mensaje leído
+            printf("\tMensaje leído: %s\n", buffer);
+            // Cerrar el extremo de lectura del pipe
+            close(fd[0]); 
+            break;
     }
     return 0;
 }
