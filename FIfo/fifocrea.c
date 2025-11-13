@@ -1,5 +1,3 @@
-// fifocrea.c - Crea FIFO y lee datos
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -10,7 +8,7 @@
 #define FIFO_NAME "FIFO2"
 #define BUFFER_SIZE 128
 
-int main(void) {
+int main(void){
     if(mkfifo(FIFO_NAME, 0666) == -1){
         perror("Error al crear el FIFO");
     }
